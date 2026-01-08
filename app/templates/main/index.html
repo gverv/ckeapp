@@ -1,0 +1,18 @@
+<!-- app/templates/main/index.html -->
+{% extends 'base.html' %} 
+
+{% block head %}
+    <title>Home</title>
+{% endblock %}
+
+{% block content %}
+
+<h1>Welcome to Flask CKEditor App!</h1>
+    <p>This is the home page.</p>
+    {% if current_user.is_authenticated %}
+    Γεια {{ current_user.username }}
+    {% else %}
+    Δεν είσαι συνδεδεμένος
+    {% endif %}
+
+{% endblock %}

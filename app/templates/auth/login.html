@@ -1,0 +1,41 @@
+<!-- app/templates/auth/login.html -->
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Login</title>
+{% endblock %}
+
+{% block content %}
+    <div class="login-container">
+        <h2>Login</h2>
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.username.label }}<br>
+                {{ form.username(size=32) }}<br>
+                {% for error in form.username.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label }}<br>
+                {{ form.password(size=32) }}<br>
+                {% for error in form.password.errors %}
+                    <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.remember_me() }} {{ form.remember_me.label }}
+            </div>
+            <div class="form-group">
+                {% comment %} {{ form.submit() }} {% endcomment %}
+                <button type="submit">Login</button>
+            </div>
+        </form>
+        <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></p>
+        {% for msg in get_flashed_messages() %}
+            <div class="alert alert-danger mt-2">{{ msg }}</div>
+        {% endfor %}
+    </div>
+{% endblock %}
+

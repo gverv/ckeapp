@@ -1,0 +1,278 @@
+# domi.txt
+💾 Προτεινόμενη δομή φακέλων
+ckeapp/
+├── run.py
+├── .env
+├── .flaskenv
+├── requirements.txt
+├── instance/
+│   └── uploads/
+└── app/
+    ├── __init__.py
+    ├── config.py
+    ├── extensions.py
+    ├── models/
+    │   ├── __init__.py
+    │   ├── post.py
+    │   └── user.py
+    ├── utils/
+    │   ├── __init__.py
+    │   └── permissions.py
+    ├── main/
+    │   ├── __init__.py
+    │   ├── routes.py
+    │   └── templates/
+    │       └── main/
+    │           └── index.html
+    ├── auth/
+    │   ├── __init__.py
+    │   ├── routes.py
+    │   └── templates/
+    │       └── auth/
+    │           └── login.html
+    ├── admin/
+    │   ├── __init__.py
+    │   ├── routes.py
+    │   └── templates/
+    │       └── admin/
+    │           └── dashboard.html
+
+1️⃣ run.py
+from app import create_app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+2️⃣ .env
+FLASK_APP=run.py
+FLASK_ENV=development
+FLASK_DEBUG=1
+SECRET_KEY=supersecretkey
+DATABASE_URL=mysql+pymysql://user:password@localhost/flask_app?charset=utf8mb4
+MAX_CONTENT_LENGTH=16MB
+UPLOAD_FOLDER=instance/uploads
+
+3️⃣ app/config.py
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY", "defaultsecret")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    CKEDITOR_PKG_TYPE = 'standard'
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "instance/uploads")
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
+
+4️⃣ app/extensions.py
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
+from flask_ckeditor import CKEditor
+from flask_wtf import CSRFProtect
+
+db = SQLAlchemy()
+migrate = Migrate()
+login_manager = LoginManager()
+ckeditor = CKEditor()
+csrf = CSRFProtect()
+
+5️⃣ app/init.py
+from flask import Flask
+from .config import Config
+from .extensions import db, migrate, login_manager, ckeditor, csrf
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    # Extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    ckeditor.init_app(app)
+    csrf.init_app(app)
+
+    # Blueprints
+    from .main import main_bp
+    from .auth import auth_bp
+    from .admin import admin_bp
+
+    app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+
+    return app
+
+6️⃣ app/models/init.py
+from .user import User
+from .post import Post
+
+app/models/user.py
+from app.extensions import db
+from flask_login import UserMixin
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+    role = db.Column(db.String(50), default='user')
+    posts = db.relationship('Post', back_populates='author')
+
+    def is_admin(self):
+        return self.role == 'admin'
+
+app/models/post.py
+from datetime import datetime
+from app.extensions import db
+from sqlalchemy.orm import relationship
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author = relationship('User', back_populates='posts')
+
+7️⃣ app/utils/permissions.py
+from functools import wraps
+from flask import abort
+from flask_login import current_user
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not (current_user.is_authenticated and current_user.is_admin()):
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
+8️⃣ app/main/init.py
+from flask import Blueprint
+
+main_bp = Blueprint('main', __name__, template_folder='templates')
+
+from . import routes
+
+app/main/routes.py
+from flask import render_template
+from . import main_bp
+
+@main_bp.route('/')
+def index():
+    return render_template('main/index.html')
+
+app/main/templates/main/index.html
+<h1>Welcome to Flask CKEditor App!</h1>
+
+9️⃣ app/auth/init.py
+from flask import Blueprint
+
+auth_bp = Blueprint('auth', __name__, template_folder='templates')
+
+from . import routes
+
+app/auth/routes.py
+from flask import render_template
+from . import auth_bp
+
+@auth_bp.route('/login')
+def login():
+    return render_template('auth/login.html')
+
+app/auth/templates/auth/login.html
+<h1>Login Page</h1>
+
+🔟 app/admin/init.py
+from flask import Blueprint
+
+admin_bp = Blueprint('admin', __name__, template_folder='templates')
+
+from . import routes
+
+app/admin/routes.py
+from flask import render_template
+from . import admin_bp
+
+@admin_bp.route('/')
+def dashboard():
+    return render_template('admin/dashboard.html')
+
+app/admin/templates/admin/dashboard.html
+<h1>Admin Dashboard</h1>
+
+1️⃣1️⃣ requirements.txt
+Flask==3.1.2
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.1.0
+Flask-Login==0.6.3
+Flask-WTF==1.2.2
+Flask-CKEditor==1.0.0
+PyMySQL==1.1.2
+python-dotenv==1.2.1
+
+
+✅ Αυτή η δομή:
+
+Λύνει TemplateNotFound (κάθε Blueprint έχει το δικό του template_folder).
+
+Λύνει ModuleNotFound / circular imports (όλα τα imports είναι σχετικά σωστά).
+
+Προετοιμάζει για CKEditor uploads, login/permissions, MySQL + SQLAlchemy.
+
+Αν θες, μπορώ να σου φτιάξω έτοιμο .env + migration scripts ώστε να κάνεις αμέσως:
+
+flask db init
+flask db migrate -m "initial"
+flask db upgrade
+
+
+και να έχεις τη βάση έτοιμη για posts & users.
+
+
+
+ckeapp/
+├── run.py
+├── .env
+├── .flaskenv
+├── requirements.txt
+├── instance/
+│   └── uploads/
+└── app/
+    ├── __init__.py
+    ├── config.py
+    ├── extensions.py
+    ├── models/
+    │   ├── __init__.py
+    │   ├── user.py
+    │   └── post.py
+    ├── utils/
+    │   └── permissions.py
+    ├── templates/
+    │   ├── base.html          👈 ΚΟΙΝΟ
+    │   ├── auth/
+    │   │   └── login.html
+    │   ├── main/
+    │   │   └── index.html
+    │   └── admin/
+    │       └── dashboard.html
+    ├── static/
+    │   └── css/
+    │       └── styles.css
+    ├── main/
+    │   ├── __init__.py
+    │   └── routes.py
+    ├── auth/
+    │   ├── __init__.py
+    │   └── routes.py
+    └── admin/
+        ├── __init__.py
+        └── routes.py
+
+
