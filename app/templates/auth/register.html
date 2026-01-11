@@ -1,0 +1,65 @@
+{!-- app/templates/auth/register.html --}
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-5" style="max-width: 420px;">
+        <div class="card shadow-sm">
+            <div class="card-body">
+            <h3 class="card-title text-center mb-4">
+                Δημιουργία λογαριασμού
+            </h3>
+
+            {# Flash messages #}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username }}
+                {% for error in form.username.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password }}
+                {% for error in form.password.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                {{ form.confirm.label(class="form-label") }}
+                {{ form.confirm }}
+                {% for error in form.confirm.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+                </div>
+
+                <div class="d-grid">
+                {{ form.submit }}
+                </div>
+            </form>
+
+            <hr>
+
+            <p class="text-center mb-0">
+                Έχεις ήδη λογαριασμό;
+                <a href="{{ url_for('auth.login') }}">Σύνδεση</a>
+            </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

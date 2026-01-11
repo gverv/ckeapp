@@ -16,33 +16,27 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
                 </li>
-
-                {% if current_user.is_authenticated and current_user.role == 'admin' %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                        Admin
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-
-            <ul class="navbar-nav ms-auto">
                 {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <span class="navbar-text me-3">
-                            👤 {{ current_user.username }}
-                        </span>
+                    <li class="nav-item text-light me-3">
+                    👤 {{ current_user.username }}
                     </li>
+
+                    {% if current_user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
+                        </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <a class="btn btn-outline-light btn-sm"
-                           href="{{ url_for('auth.logout') }}">
+                            href="{{ url_for('auth.logout') }}">
                             Logout
                         </a>
                     </li>
                 {% else %}
                     <li class="nav-item">
                         <a class="btn btn-outline-light btn-sm"
-                           href="{{ url_for('auth.login') }}">
+                            href="{{ url_for('auth.login') }}">
                             Login
                         </a>
                     </li>

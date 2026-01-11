@@ -1,17 +1,29 @@
+# app/auth/forms.py
+
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField
-from wtforms.validators import DataRequired, Length, Email
+from wtforms import (
+    StringField,
+    PasswordField,
+    BooleanField,
+    SubmitField
+)
+from wtforms.validators import DataRequired, Length, EqualTo
 
 class LoginForm(FlaskForm):
-    
     username = StringField(
         "Όνομα χρήστη",
-        validators=[
-            DataRequired(message="Το username είναι υποχρεωτικό"),
-            Length(min=3, max=80)
-        ],
-        render_kw={"class": "form-control", "placeholder": "Username"}
+        validators=[DataRequired(), Length(min=3, max=80)],
+        render_kw={"class": "form-control"}
     )
+
+    password = PasswordField(
+        "Κωδικός",
+        validators=[DataRequired()],
+        render_kw={"class": "form-control"}
+    )
+
+    remember = BooleanField("Να με θυμάσαι")
+
 
     # email = EmailField(
     #     "Email",
@@ -22,21 +34,35 @@ class LoginForm(FlaskForm):
     #     render_kw={"class": "form-control", "placeholder": "Email"}
     # )
 
-    password = PasswordField(
-        "Κωδικός",
-        validators=[
-            DataRequired(message="Το password είναι υποχρεωτικό"),
-            Length(min=4)
-        ],
-        render_kw={"class": "form-control", "placeholder": "Password"}
-    )
-
-    remember = BooleanField(
-        "Να με θυμάσαι",
-        render_kw={"class": "form-check-input"}
-    )
-
     submit = SubmitField(
         "Σύνδεση",
         render_kw={"class": "btn btn-primary w-100"}
+    )
+
+
+class RegisterForm(FlaskForm):
+    username = StringField(
+        "Όνομα χρήστη",
+        validators=[DataRequired(), Length(min=3, max=80)],
+        render_kw={"class": "form-control"}
+    )
+
+    password = PasswordField(
+        "Κωδικός",
+        validators=[DataRequired(), Length(min=4)],
+        render_kw={"class": "form-control"}
+    )
+
+    confirm = PasswordField(
+        "Επιβεβαίωση κωδικού",
+        validators=[
+            DataRequired(),
+            EqualTo("password", message="Οι κωδικοί δεν ταιριάζουν")
+        ],
+        render_kw={"class": "form-control"}
+    )
+
+    submit = SubmitField(
+        "Εγγραφή",
+        render_kw={"class": "btn btn-success w-100"}
     )

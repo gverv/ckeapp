@@ -1,17 +1,19 @@
 # app/auth/routes.py
-from flask import render_template, redirect, url_for, flash, request, Blueprint
+from flask import render_template, redirect, url_for, flash, request    #, Blueprint
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash
 
 from app import admin
 from app.extensions import db
-from app.utils.permissions import role_required
+# from app.utils.permissions import role_required
 from app.models.user import User
-from app.auth.forms import LoginForm
-from . import auth
+from .forms import LoginForm, RegisterForm
+from . import auth_bp   # as auth
 
 
-@auth.route("/login", methods=["GET", "POST"])
+
+
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
@@ -33,15 +35,62 @@ def login():
     return render_template("auth/login.html", form=form)
 
 
-@auth.route("/logout")
+@auth_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
     flash("Αποσυνδεθήκατε", "info")
-    # return redirect(url_for("auth.login"))
+    # return redirect(url_for("auth_bp.login"))
     return redirect(url_for('main.index'))
 
-@auth.route("/admin-only")
+
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        flash(f"Έχετε ήδη συνδεθεί {current_user.username}", "info")
+        return redirect(url_for("main.index"))
+
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        existing_user = User.query.filter_by(
+            username=form.username.data
+        ).first()
+
+        if existing_user:
+            flash("Το username υπάρχει ήδη", "danger")
+            return redirect(url_for("auth.register"))
+
+        # 👉 Αν είναι ο ΠΡΩΤΟΣ χρήστης → admin
+        is_first_user = User.query.count() == 0
+        role = "admin" if is_first_user else "user"
+
+        user = User(
+            username=form.username.data,
+            role=role
+        )
+        user.set_password(form.password.data)
+
+        db.session.add(user)
+        db.session.commit()
+
+        # ✅ Auto-login
+        login_user(user)
+
+        if role == "admin":
+            flash("Δημιουργήθηκε ο πρώτος admin χρήστης", "success")
+        else:
+            flash("Η εγγραφή ολοκληρώθηκε", "success")
+
+        return redirect(url_for("main.index"))
+
+    return render_template("auth/register.html", form=form)
+
+
+#########################
+
+
+@auth_bp.route("/admin-only")
 @login_required
 def admin_only():
     if current_user.role != "admin":
@@ -56,23 +105,23 @@ def admin_only():
 # def dashboard():
 #     return render_template("admin/dashboard.html")
 
-@auth.route('/register')
+@auth_bp.route('/register')
 def register():
     return render_template('auth/register.html')
 
-@auth.route('/reset-password')
+@auth_bp.route('/reset-password')
 def reset_password():
     return render_template('auth/reset_password.html')
 
-@auth.route('/profile')
+@auth_bp.route('/profile')
 def profile():
     return render_template('auth/profile.html')
 
-@auth.route('/change-password')
+@auth_bp.route('/change-password')
 def change_password():
     return render_template('auth/change_password.html')
 
-@auth.route('/verify-email')
+@auth_bp.route('/verify-email')
 def verify_email():
     return render_template('auth/verify_email.html')
 

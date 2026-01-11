@@ -6,10 +6,13 @@ from flask_login import current_user
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not (current_user.is_authenticated and current_user.is_admin()):
+        if not (current_user.is_authenticated and current_user.role == "admin"):
             abort(403)
         return f(*args, **kwargs)
     return decorated
+
+
+###########################
 
 def editor_required(f):
     @wraps(f)
