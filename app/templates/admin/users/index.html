@@ -1,2 +1,57 @@
 {!-- app/templates/admin/users/index.html --}
 
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Διαχείριση Χρηστών</title>
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Χρήστες</h2>
+        <a href="{{ url_for('admin.create_user') }}" class="btn btn-success">
+            ➕ Νέος Χρήστης
+        </a>
+    </div>
+
+    <table class="table table-striped table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th class="text-center">Ενέργειες</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    <span class="badge bg-{% if user.role == 'admin' %}danger{% else %}secondary{% endif %}">
+                        {{ user.role }}
+                    </span>
+                </td>
+                <td class="text-center">
+                    {% if user.id != current_user.id %}
+                    <form method="POST"
+                        action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                        style="display:inline;"
+                        onsubmit="return confirm('Σίγουρα;');">
+                        {{ csrf_token() }}
+                        <button class="btn btn-sm btn-outline-danger">
+                            🗑 Διαγραφή
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">τρέχων χρήστης</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
