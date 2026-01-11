@@ -5,9 +5,9 @@ from wtforms import (
     StringField,
     PasswordField,
     BooleanField,
-    SubmitField
+    SubmitField,
 )
-from wtforms.validators import DataRequired, Length, EqualTo
+from wtforms.validators import DataRequired, Length, EqualTo, Email
 
 class LoginForm(FlaskForm):
     username = StringField(
@@ -24,16 +24,6 @@ class LoginForm(FlaskForm):
 
     remember = BooleanField("Να με θυμάσαι")
 
-
-    # email = EmailField(
-    #     "Email",
-    #     validators=[
-    #         DataRequired(message="Το email είναι υποχρεωτικό"),
-    #         Email
-    #     ],
-    #     render_kw={"class": "form-control", "placeholder": "Email"}
-    # )
-
     submit = SubmitField(
         "Σύνδεση",
         render_kw={"class": "btn btn-primary w-100"}
@@ -41,6 +31,16 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
+
+    email = StringField(
+        "Email",
+        validators=[
+            DataRequired(message="Το email είναι υποχρεωτικό"),
+            Email("Παρακαλώ δώστε το email σας")
+        ],
+        render_kw={"class": "form-control", "placeholder": "Email"}
+    )
+
     username = StringField(
         "Όνομα χρήστη",
         validators=[DataRequired(), Length(min=3, max=80)],
