@@ -105,10 +105,6 @@ def admin_only():
 # def dashboard():
 #     return render_template("admin/dashboard.html")
 
-@auth_bp.route('/register')
-def register():
-    return render_template('auth/register.html')
-
 @auth_bp.route('/reset-password')
 def reset_password():
     return render_template('auth/reset_password.html')

@@ -1,11 +1,32 @@
 # app/main/routes.py
-from flask import render_template
+import os
+from flask import request, abort, render_template
+from werkzeug.utils import secure_filename
+from flask_login import login_required
+from app import Config
+from . import main_bp
 from . import main_bp
 
 @main_bp.route('/')
 def index():
     return render_template('main/index.html')
 
+@main_bp.route("/upload-image", methods=["POST"])
+@login_required
+def upload_image():
+    f = request.files.get("upload")
+    if not f:
+        abort(400)
+    ext = f.filename.rsplit(".", 1)[-1].lower()
+    if ext not in {"png", "jpg", "jpeg", "gif"}:
+        abort(403)
+    filename = secure_filename(f.filename)
+    path = os.path.join("instance/uploads", filename)
+    f.save(path)
+    return {
+        "uploaded": True,
+        "url": f"/{path}"
+    }
 
 ##################
 
