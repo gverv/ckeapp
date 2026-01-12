@@ -1,0 +1,90 @@
+{# app/templates/admin/settings.html #}
+
+{% extends "base.html" %}
+
+{% block head %}
+<title>Admin Settings</title>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Ρυθμίσεις Συστήματος</h2>
+
+<div class="row g-4">
+
+    <!-- Γενικές Ρυθμίσεις -->
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                Γενικές Ρυθμίσεις
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.site_name.label }}
+                        {{ form.site_name }}
+                    </div>
+
+                    <div class="form-check mb-2">
+                        {{ form.maintenance_mode }}
+                        {{ form.maintenance_mode.label }}
+                    </div>
+
+                    <div class="form-check mb-3">
+                        {{ form.allow_registration }}
+                        {{ form.allow_registration.label }}
+                    </div>
+
+                    {{ form.submit }}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ρυθμίσεις Ασφαλείας -->
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                Ασφάλεια
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label">Αλλαγή Admin Password</label>
+                        <input type="password"
+                               name="new_password"
+                               class="form-control"
+                               placeholder="Νέος κωδικός">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Επιβεβαίωση Password</label>
+                        <input type="password"
+                               name="confirm_password"
+                               class="form-control"
+                               placeholder="Επανάληψη κωδικού">
+                    </div>
+
+                    <button class="btn btn-danger">
+                        🔐 Αλλαγή Κωδικού
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Πληροφορίες -->
+<div class="card mt-4">
+    <div class="card-body text-muted">
+        <small>
+            ⚙ Οι ρυθμίσεις αυτές προορίζονται μόνο για διαχειριστές.
+            Οποιαδήποτε αλλαγή καταγράφεται στα logs.
+        </small>
+    </div>
+</div>
+{% endblock %}

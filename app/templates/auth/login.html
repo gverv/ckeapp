@@ -1,4 +1,5 @@
-<!-- app/templates/auth/login.html -->
+{# app/templates/auth/login.html #}
+
 {% extends "base.html" %}
 
 {% block head %}
@@ -7,7 +8,7 @@
 
 {% block content %}
     <div class="login-container">
-        <h2>Login</h2>
+        <h2>Είσοδος χρήστη</h2>
         <form method="POST" action="{{ url_for('auth.login') }}">
             {{ form.hidden_tag() }}
             <div class="form-group">
@@ -29,13 +30,12 @@
             </div>
             <div class="form-group">
                 {# {{ form.submit() }} #}
+                <br>
                 <button type="submit">Login</button>
             </div>
         </form>
-        <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></p>
-        {% for msg in get_flashed_messages() %}
-            <div class="alert alert-danger mt-2">{{ msg }}</div>
-        {% endfor %}
+        <br>
+        <p> Δεν έχετε λογαριασμό; <a href="{{ url_for('auth.register') }}">Εγγραφείτε εδώ</a></p>
     </div>
 {% endblock %}
 

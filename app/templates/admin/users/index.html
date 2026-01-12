@@ -1,4 +1,4 @@
-{!-- app/templates/admin/users/index.html --}
+{# app/templates/admin/users/index.html #}
 
 {% extends "base.html" %}
 
@@ -28,7 +28,12 @@
             {% for user in users %}
             <tr>
                 <td>{{ user.id }}</td>
-                <td>{{ user.username }}</td>
+                <td>
+                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}">
+                        {{ user.username }}
+                    </a>
+                </td>
+
                 <td>{{ user.email }}</td>
                 <td>
                     <span class="badge bg-{% if user.role == 'admin' %}danger{% else %}secondary{% endif %}">
@@ -41,7 +46,7 @@
                         action="{{ url_for('admin.delete_user', user_id=user.id) }}"
                         style="display:inline;"
                         onsubmit="return confirm('Σίγουρα;');">
-                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button class="btn btn-sm btn-outline-danger">
                             🗑 Διαγραφή
                         </button>

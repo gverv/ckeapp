@@ -1,4 +1,5 @@
 # app/main/routes.py
+
 import os
 from flask import request, abort, render_template
 from werkzeug.utils import secure_filename
@@ -27,6 +28,10 @@ def upload_image():
         "uploaded": True,
         "url": f"/{path}"
     }
+
+@main_bp.route("/maintenance")
+def maintenance():
+    return render_template("main/maintenance.html"), 503
 
 ##################
 

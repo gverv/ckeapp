@@ -36,7 +36,7 @@ class RegisterForm(FlaskForm):
         "Email",
         validators=[
             DataRequired(message="Το email είναι υποχρεωτικό"),
-            Email("Παρακαλώ δώστε το email σας")
+            Email("Δεν είναι έγκυρη διεύθυνση email",)
         ],
         render_kw={"class": "form-control", "placeholder": "Email"}
     )

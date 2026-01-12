@@ -1,8 +1,9 @@
-<!-- app/templates/navbar.html -->
+{# app/templates/navbar.html #}
+
  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="{{ url_for('main.index') }}">
-            FlaskCKE
+            Δοκιμή
         </a>
 
         <button class="navbar-toggler" type="button"
@@ -14,30 +15,30 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+                    <a class="nav-link" href="{{ url_for('main.index') }}">Αρχική σελίδα</a>
                 </li>
                 {% if current_user.is_authenticated %}
-                    <li class="nav-item text-light me-3">
-                    👤 {{ current_user.username }}
+                    <li class="nav-item text-light">
+                        <a class="nav-link" href="#">👤 {{ current_user.username }}</a>
                     </li>
 
                     {% if current_user.role == 'admin' %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Διαχειριστής</a>
                         </li>
                     {% endif %}
 
                     <li class="nav-item">
-                        <a class="btn btn-outline-light btn-sm"
+                        <a class="nav-link"
                             href="{{ url_for('auth.logout') }}">
-                            Logout
+                            Αποσύνδεση
                         </a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="btn btn-outline-light btn-sm"
+                        <a class="nav-link"
                             href="{{ url_for('auth.login') }}">
-                            Login
+                            Είσοδος
                         </a>
                     </li>
                 {% endif %}

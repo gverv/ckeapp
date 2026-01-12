@@ -1,18 +1,19 @@
-<!-- app/templates/main/index.html -->
+{# app/templates/main/index.html #}
+
 {% extends 'base.html' %} 
 
 {% block head %}
-    <title>Home</title>
+    <title>Αρχική σελίδα</title>
 {% endblock %}
 
 {% block content %}
 
-<h1>Welcome to Flask CKEditor App!</h1>
-    <p>This is the home page.</p>
+    <h1>Καλώς ορίσατε στη δοκιμαστική Flask CKEditor εφαρμογή!</h1>
+    <p>Αυτή είναι η αρχική σελίδα μας.</p>
     {% if current_user.is_authenticated %}
-    Γεια {{ current_user.username }}
+        Γεια {{ current_user.username }}
     {% else %}
-    Δεν είσαι συνδεδεμένος
+        Δεν είσαι συνδεδεμένος
     {% endif %}
 
 {% endblock %}

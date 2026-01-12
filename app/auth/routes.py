@@ -25,12 +25,12 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
-            flash("Επιτυχής σύνδεση", "success")
+            flash(f"Επιτυχής σύνδεση", "success")
 
             next_page = request.args.get("next")
             return redirect(next_page or url_for("main.index"))
 
-        flash("Λάθος username ή password", "danger")
+        flash(f"Λάθος username ή password", "danger")
 
     return render_template("auth/login.html", form=form)
 
@@ -39,7 +39,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Αποσυνδεθήκατε", "info")
+    flash(f"Αποσυνδεθήκατε", "info")
     # return redirect(url_for("auth_bp.login"))
     return redirect(url_for('main.index'))
 
@@ -58,7 +58,15 @@ def register():
         ).first()
 
         if existing_user:
-            flash("Το username υπάρχει ήδη", "danger")
+            flash(f"Το username υπάρχει ήδη", "danger")
+            return redirect(url_for("auth.register"))
+
+        existing_email = User.query.filter_by(
+            email=form.email.data
+        ).first()
+
+        if existing_email:
+            flash(f"Το email υπάρχει ήδη", "danger")
             return redirect(url_for("auth.register"))
 
         # 👉 Αν είναι ο ΠΡΩΤΟΣ χρήστης → admin
@@ -66,21 +74,26 @@ def register():
         role = "admin" if is_first_user else "user"
 
         user = User(
-            username=form.username.data,
-            role=role
+            username = form.username.data,
+            email = form.email.data,
+            role = role
         )
         user.set_password(form.password.data)
 
         db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.commit()    
+        except Exception as e:
+            flash(f"Σφάλμα κατά την εγγραφή {e}", category="danger")
+            return redirect(url_for("main.index"))
 
         # ✅ Auto-login
         login_user(user)
 
         if role == "admin":
-            flash("Δημιουργήθηκε ο πρώτος admin χρήστης", "success")
+            flash(f"Δημιουργήθηκε ο πρώτος Διαχειριστής", "success")
         else:
-            flash("Η εγγραφή ολοκληρώθηκε", "success")
+            flash(f"Η εγγραφή για το χρήστη { user.username } ολοκληρώθηκε", "success")
 
         return redirect(url_for("main.index"))
 
@@ -94,7 +107,7 @@ def register():
 @login_required
 def admin_only():
     if current_user.role != "admin":
-        flash("Δεν έχετε δικαίωμα πρόσβασης", "danger")
+        flash(f"Δεν έχετε δικαίωμα πρόσβασης", "danger")
         return redirect(url_for("main.index"))
 
     return "Admin content"
