@@ -1,0 +1,66 @@
+{# app/templates/admin/reports.html #}
+
+{% extends "base.html" %}
+
+{% block head %}
+<title>Admin Reports</title>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📊 Αναφορές Συστήματος</h2>
+
+<div class="row g-4">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>👥 Χρήστες</h5>
+                <h2>{{ stats.users_total }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>🛠 Admin</h5>
+                <h2>{{ stats.admins }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>✏️ Editors</h5>
+                <h2>{{ stats.editors }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>📄 Άρθρα</h5>
+                <h2>{{ stats.articles_total }}</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr class="my-4">
+
+<h5>🕒 Τελευταίες Ενέργειες</h5>
+
+<ul class="list-group">
+    <li class="list-group-item">
+        Τελευταίος χρήστης:
+        <strong>{{ stats.last_user.username if stats.last_user else "—" }}</strong>
+    </li>
+    <li class="list-group-item">
+        Τελευταίο άρθρο:
+        <strong>{{ stats.last_article.article_title if stats.last_article else "—" }}</strong>
+    </li>
+</ul>
+{% endblock %}

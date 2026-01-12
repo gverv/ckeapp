@@ -1,10 +1,9 @@
 # app/admin/routes.py
 
 from flask import render_template, redirect, url_for, flash #, request
-# from flask_login import login_required
 from app.extensions import db
-# from app.utils.permissions import admin_required
-from app.models import AppSettings, User, Post
+from app.models import AppSettings, User, Article, ActivityLog
+from app.utils.logs import log_action
 from .forms import AdminSettingsForm, EditUserForm, CreateUserForm
 from . import admin_bp
 
@@ -16,6 +15,7 @@ def settings():
         db.session.add(settings)
         try:
             db.session.commit()
+            log_action("Αλλαγή ρυθμίσεων εφαρμογής")
         except Exception as e:
             flash(f"Σφάλμα κατά την εγγραφή των ρυθμίσεων στη βάση δεδομένων {e}")
     form = AdminSettingsForm(obj=settings)
@@ -25,6 +25,7 @@ def settings():
         settings.allow_registration = form.allow_registration.data
         try:
             db.session.commit()
+            log_action("Αλλαγή ρυθμίσεων εφαρμογής")
         except Exception as e:
             flash(f"Σφάλμα κατά την εγγραφή των ρυθμίσεων στη βάση δεδομένων {e}")
         flash(f"Οι ρυθμίσεις αποθηκεύτηκαν", "success")
@@ -32,9 +33,9 @@ def settings():
     return render_template("admin/settings.html", form=form)
 
 
-@admin_bp.route('/')
-def dashboard():
-    return render_template('admin/dashboard.html')
+# @admin_bp.route('/')
+# def dashboard():
+#     return render_template('admin/dashboard.html')
 
 @admin_bp.route("/users")
 def users():
@@ -54,9 +55,10 @@ def create_user():
         db.session.add(user)
         try:
             db.session.commit()
+            log_action(f"Προστέθηκε ο χρήστης { user }")
         except Exception as e:
             flash(f"Σφάλμα κατά την εγγραφή του χρήστη. {e}", "danger")
-        flash(f"Ο χρήστης { user.username } δημιουργήθηκε!", "success")
+        flash(f"Ο χρήστης { user } δημιουργήθηκε!", "success")
         return redirect(url_for("admin.users"))
 
     return render_template("admin/users/create.html")
@@ -65,8 +67,13 @@ def create_user():
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
-    db.session.commit()
-    flash(f"Ο χρήστης {user.username} διαγράφηκε", "warning")
+    try:
+        db.session.commit()
+        log_action(f"Ο χρήστης { user } διαγράφηκε")
+        flash(f"Ο χρήστης {user} διαγράφηκε", "warning")
+    except Exception as e:
+        log_action(f"Ο χρήστης { user } δεν μπόρεσε να διαγραφεί")
+        flash(f"Ο χρήστης {user} δεν μπόρεσε να διαγραφεί", "warning")
     return redirect(url_for("admin.users"))
 
 @admin_bp.route("/users/<int:user_id>/edit", methods=["GET", "POST"])
@@ -88,13 +95,24 @@ def edit_user(user_id):
         return redirect(url_for("admin.users"))
 
     return render_template("admin/users/edit.html", form=form, user=user)
-#########################
+
 
 @admin_bp.route('/reports')
 def reports():
-    return render_template('admin/reports.html')
+    stats = {
+        "users_total": User.query.count(),
+        "admins": User.query.filter_by(role=User.ROLE_ADMIN).count(),
+        "editors": User.query.filter_by(role=User.ROLE_EDITOR).count(),
+        "users": User.query.filter_by(role=User.ROLE_USER).count(),
+        "articles_total": Article.query.count(),
+        "last_user": User.query.order_by(User.date_created.desc()).first(),
+        "last_article": Article.query.order_by(Article.date_created.desc()).first(),
+    }
 
+    return render_template("admin/reports.html", stats=stats)
+                           
+                           
 @admin_bp.route('/logs')
 def logs():
-    return render_template('admin/logs.html')
-
+    logs = ActivityLog.query.order_by(ActivityLog.created_at.desc()).limit(100).all()
+    return render_template("admin/logs.html", logs=logs)

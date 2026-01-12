@@ -4,6 +4,12 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, SubmitField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Length, Email, Optional
 
+ROLE_CHOICES = [
+    ("user", "Χρήστης"),
+    ("editor", "Συντάκτης"),
+    ("admin", "Διαχειριστής"),
+]
+
 class CreateUserForm(FlaskForm):
     username = StringField(
         "Username",
@@ -24,11 +30,8 @@ class CreateUserForm(FlaskForm):
     )
 
     role = SelectField(
-        "Role",
-        choices=[
-            ("user", "User"),
-            ("admin", "Admin"),
-        ],
+        "Ρόλος",
+        choices=ROLE_CHOICES,
         validators=[DataRequired()],
         render_kw={"class": "form-select"}
     )
@@ -52,12 +55,8 @@ class EditUserForm(FlaskForm):
     )
 
     role = SelectField(
-        "Role",
-        choices=[
-            ("user", "User"),
-            ("editor", "Editor"),
-            ("admin", "Admin")
-        ],
+        "Ρόλος",
+        choices=ROLE_CHOICES,
         validators=[DataRequired()],
         render_kw={"class": "form-select"}
     )

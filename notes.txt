@@ -13,7 +13,7 @@ ckeapp/
     ├── extensions.py
     ├── models/
     │   ├── __init__.py
-    │   ├── post.py
+    │   ├── article.py
     │   └── user.py
     ├── utils/
     │   ├── __init__.py
@@ -110,7 +110,7 @@ def create_app():
 
 6️⃣ app/models/init.py
 from .user import User
-from .post import Post
+from .article import Article
 
 app/models/user.py
 from app.extensions import db
@@ -122,23 +122,23 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(50), default='user')
-    posts = db.relationship('Post', back_populates='author')
+    articles = db.relationship('Article', back_populates='author')
 
     def is_admin(self):
         return self.role == 'admin'
 
-app/models/post.py
+app/models/article.py
 from datetime import datetime
 from app.extensions import db
 from sqlalchemy.orm import relationship
 
-class Post(db.Model):
+class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
-    content = db.Column(db.Text, nullable=False)
+    article_body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    author = relationship('User', back_populates='posts')
+    author = relationship('User', back_populates='articles')
 
 7️⃣ app/utils/permissions.py
 from functools import wraps
@@ -233,7 +233,7 @@ flask db migrate -m "initial"
 flask db upgrade
 
 
-και να έχεις τη βάση έτοιμη για posts & users.
+και να έχεις τη βάση έτοιμη για articles & users.
 
 
 
@@ -251,7 +251,7 @@ ckeapp/
     ├── models/
     │   ├── __init__.py
     │   ├── user.py
-    │   └── post.py
+    │   └── article.py
     ├── utils/
     │   └── permissions.py
     ├── templates/
@@ -283,7 +283,7 @@ app/
 ├── models/
 │   ├── __init__.py
 │   ├── user.py
-│   └── post.py
+│   └── article.py
 ├── auth/
 │   ├── __init__.py
 │   ├── routes.py
@@ -306,5 +306,57 @@ app/
     │   └── dashboard.html
     └── main/
         └── index.html
+
+
+6️⃣ UI badges (Bootstrap)
+<span class="badge bg-
+{% if user.role == 'admin' %}danger
+{% elif user.role == 'editor' %}warning
+{% else %}secondary
+{% endif %}
+">
+{{ user.role }}
+</span>
+
+
+
+8️⃣ Δημιουργία πρώτου Admin (once)
+
+📄 flask shell
+
+from app import create_app
+from app.extensions import db
+from app.models.user import User
+
+app = create_app()
+app.app_context().push()
+
+u = User(username="admin", email="admin@site.gr", role=User.ROLE_ADMIN)
+u.set_password("admin123")
+db.session.add(u)
+db.session.commit()
+
+
+
+
+
+Πώς γράφεις logs (παράδειγμα)
+from app.models.activity_log import ActivityLog
+from flask_login import current_user
+from app.extensions import db
+from flask import request
+
+def log_action(action):
+    log = ActivityLog(
+        user_id=current_user.id if current_user.is_authenticated else None,
+        action=action,
+        ip_address=request.remote_addr
+    )
+    db.session.add(log)
+    db.session.commit()
+
+
+Παράδειγμα χρήσης:
+log_action("Deleted user ID 5")
 
 

@@ -22,9 +22,55 @@
                         <a class="nav-link" href="#">👤 {{ current_user.username }}</a>
                     </li>
 
-                    {% if current_user.role == 'admin' %}
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle"
+                href="#"
+                id="adminDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+                    🛠 Διαχειριστής
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('admin.users') }}">
+                            👥 Χρήστες
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('admin.settings') }}">
+                            ⚙️ Ρυθμίσεις
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('admin.reports') }}">
+                            📊 Reports
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('admin.logs') }}">
+                            📜 Logs
+                        </a>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <a class="dropdown-item text-danger"
+                        href="{{ url_for('auth.logout') }}">
+                            🚪 Logout
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            {% endif %}
+
+                    {% if current_user.is_editor() or current_user.is_admin() %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Διαχειριστής</a>
+                            {# <a class="nav-link" href="{{ url_for('editor.dashboard') }}">Editor</a> #}
+                            <a class="nav-link" href="#">Editor</a>
                         </li>
                     {% endif %}
 

@@ -1,4 +1,5 @@
 # app/auth/routes.py
+
 from flask import render_template, redirect, url_for, flash, request    #, Blueprint
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash
@@ -9,7 +10,7 @@ from app.extensions import db
 from app.models.user import User
 from .forms import LoginForm, RegisterForm
 from . import auth_bp   # as auth
-
+from app.utils.logs import log_action
 
 
 
@@ -25,6 +26,7 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
+            log_action("User logged in")
             flash(f"Επιτυχής σύνδεση", "success")
 
             next_page = request.args.get("next")
@@ -38,6 +40,7 @@ def login():
 @auth_bp.route("/logout")
 @login_required
 def logout():
+    log_action("User logged out")
     logout_user()
     flash(f"Αποσυνδεθήκατε", "info")
     # return redirect(url_for("auth_bp.login"))
@@ -82,7 +85,8 @@ def register():
 
         db.session.add(user)
         try:
-            db.session.commit()    
+            db.session.commit() 
+            log_action("User created")   
         except Exception as e:
             flash(f"Σφάλμα κατά την εγγραφή {e}", category="danger")
             return redirect(url_for("main.index"))
@@ -91,8 +95,10 @@ def register():
         login_user(user)
 
         if role == "admin":
+            log_action("Δημιουργήθηκε ο πρώτος Διαχειριστής")
             flash(f"Δημιουργήθηκε ο πρώτος Διαχειριστής", "success")
         else:
+            log_action(f"Η εγγραφή για το χρήστη { user.username } ολοκληρώθηκεt")
             flash(f"Η εγγραφή για το χρήστη { user.username } ολοκληρώθηκε", "success")
 
         return redirect(url_for("main.index"))

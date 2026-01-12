@@ -55,9 +55,9 @@ def faq():
 def blog():
     return render_template('main/blog.html')
 
-@main_bp.route('/blog/<int:post_id>')
-def blog_post(post_id):
-    return render_template('main/blog_post.html', post_id=post_id)
+@main_bp.route('/blog/<int:article_id>')
+def blog_article(article_id):
+    return render_template('main/blog_article.html', article_id=article_id)
 
 @main_bp.route('/testimonials')
 def testimonials():
