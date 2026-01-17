@@ -4,6 +4,7 @@ from flask import Flask
 from .config import Config
 from .extensions import db, migrate, login_manager, ckeditor, csrf
 from .middleware import maintenance_middleware
+from .editor import editor_bp
 
 def create_app():
     app = Flask(__name__)
@@ -36,6 +37,7 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(editor_bp, url_prefix="/editor")
 
     return app
 

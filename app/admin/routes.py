@@ -3,11 +3,12 @@
 from flask import render_template, redirect, url_for, flash #, request
 from app.extensions import db
 from app.models import AppSettings, User, Article, ActivityLog
-from app.utils.logs import log_action
+from app.utils.logs import log_route , log_action
 from .forms import AdminSettingsForm, EditUserForm, CreateUserForm
 from . import admin_bp
 
 @admin_bp.route("/settings", methods=["GET", "POST"])
+@log_route("Αλλαγή ρυθμίσεων εφαρμογής")
 def settings():
     settings = AppSettings.query.first()
     if not settings:
@@ -15,8 +16,9 @@ def settings():
         db.session.add(settings)
         try:
             db.session.commit()
-            log_action("Αλλαγή ρυθμίσεων εφαρμογής")
+            # log_action("Αλλαγή ρυθμίσεων εφαρμογής")
         except Exception as e:
+            db.session.rollback()
             flash(f"Σφάλμα κατά την εγγραφή των ρυθμίσεων στη βάση δεδομένων {e}")
     form = AdminSettingsForm(obj=settings)
     if form.validate_on_submit():
@@ -25,9 +27,11 @@ def settings():
         settings.allow_registration = form.allow_registration.data
         try:
             db.session.commit()
-            log_action("Αλλαγή ρυθμίσεων εφαρμογής")
+            # log_action("Αλλαγή ρυθμίσεων εφαρμογής")
         except Exception as e:
+            db.session.rollback()
             flash(f"Σφάλμα κατά την εγγραφή των ρυθμίσεων στη βάση δεδομένων {e}")
+            return redirect(url_for("admin.settings"))
         flash(f"Οι ρυθμίσεις αποθηκεύτηκαν", "success")
         return redirect(url_for("admin.settings"))
     return render_template("admin/settings.html", form=form)
@@ -55,9 +59,11 @@ def create_user():
         db.session.add(user)
         try:
             db.session.commit()
-            log_action(f"Προστέθηκε ο χρήστης { user }")
+            log_action(f"Προστέθηκε ο χρήστης { user }", category="admin", target_user=user)
         except Exception as e:
+            db.session.rollback()
             flash(f"Σφάλμα κατά την εγγραφή του χρήστη. {e}", "danger")
+            return redirect(url_for("admin.users"))
         flash(f"Ο χρήστης { user } δημιουργήθηκε!", "success")
         return redirect(url_for("admin.users"))
 
@@ -69,10 +75,11 @@ def delete_user(user_id):
     db.session.delete(user)
     try:
         db.session.commit()
-        log_action(f"Ο χρήστης { user } διαγράφηκε")
+        log_action(f"Ο χρήστης { user } διαγράφηκε", category="admin", target_user=user)
         flash(f"Ο χρήστης {user} διαγράφηκε", "warning")
     except Exception as e:
-        log_action(f"Ο χρήστης { user } δεν μπόρεσε να διαγραφεί")
+        db.session.rollback()
+        log_action(f"Ο χρήστης { user } δεν μπόρεσε να διαγραφεί", category="admin", target_user=user)
         flash(f"Ο χρήστης {user} δεν μπόρεσε να διαγραφεί", "warning")
     return redirect(url_for("admin.users"))
 
@@ -88,12 +95,14 @@ def edit_user(user_id):
             user.set_password(form.password.data)
         try:
             db.session.commit()
+            log_action(f"Ο χρήστης {user} τροποποιήθηκε", category="admin", target_user=user)
+            flash(f"Ο χρήστης {user} ενημερώθηκε.", category="success")
         except Exception as e:
-            flash(f"Σφάλμα εγγραφής αλλαγών στη βάση {e}\nγια το χρήστη {user.username}.", category="danger")
+            db.session.rollback()
+            flash(f"Σφάλμα εγγραφής αλλαγών στη βάση {e}\nγια το χρήστη {user}.", category="danger")
+            log_action(f"Σφάλμα εγγραφής αλλαγών στη βάση {e}\nγια το χρήστη {user}.", category="admin", target_user=user)
             return redirect(url_for("admin.users"))
-        flash(f"Ο χρήστης {user.username} ενημερώθηκε.", category="success")
         return redirect(url_for("admin.users"))
-
     return render_template("admin/users/edit.html", form=form, user=user)
 
 
@@ -108,7 +117,6 @@ def reports():
         "last_user": User.query.order_by(User.date_created.desc()).first(),
         "last_article": Article.query.order_by(Article.date_created.desc()).first(),
     }
-
     return render_template("admin/reports.html", stats=stats)
                            
                            

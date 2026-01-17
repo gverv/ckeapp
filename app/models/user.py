@@ -40,7 +40,7 @@ class User(UserMixin, db.Model):
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
-    articles = db.relationship("Article", back_populates="author", lazy=True)
+    articles = db.relationship("Article", back_populates="author", cascade="all, delete-orphan", lazy=True)
 
     def __repr__(self):
         return self.username

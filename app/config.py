@@ -14,12 +14,12 @@ class Config:
     )
 
     SECRET_KEY = os.getenv("SECRET_KEY", "defaultsecret")
-    # SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
-    # SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     CKEDITOR_PKG_TYPE = "standard"
+    CKEDITOR_SERVE_LOCAL = False
     CKEDITOR_ENABLE_CSRF = True
-    CKEDITOR_FILE_UPLOADER = "main.upload_image"
-    UPLOAD_FOLDER = "instance/uploads"
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+    CKEDITOR_FILE_UPLOADER = "editor.upload"
+    UPLOAD_FOLDER = os.path.join("instance", "uploads")
+    CKEDITOR_UPLOAD_PATH = "ckeditor"
+    ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB

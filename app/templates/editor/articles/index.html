@@ -1,0 +1,22 @@
+<!-- app/templates/editor/articles/index.html -->
+ 
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Editor · Άρθρα</title>
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Τα άρθρα μου</h2>
+
+        <a href="{{ url_for('editor.create_article') }}"
+           class="btn btn-primary">
+            ➕ Νέο άρθρο
+        </a>
+    </div>
+
+    <p class="text-muted">
+        Εδώ θα εμφανιστεί η λίστα άρθρων του editor.
+    </p>
+{% endblock %}

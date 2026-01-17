@@ -2,7 +2,7 @@
 
 from flask import render_template, redirect, url_for, flash, request    #, Blueprint
 from flask_login import login_user, logout_user, current_user, login_required
-from werkzeug.security import check_password_hash
+# from werkzeug.security import check_password_hash
 
 from app import admin
 from app.extensions import db
@@ -10,7 +10,7 @@ from app.extensions import db
 from app.models.user import User
 from .forms import LoginForm, RegisterForm
 from . import auth_bp   # as auth
-from app.utils.logs import log_action
+from app.utils.logs import log_action, log_route
 
 
 
@@ -26,7 +26,7 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
-            log_action("User logged in")
+            log_action("User logged in", category="auth", target_user=user)
             flash(f"Επιτυχής σύνδεση", "success")
 
             next_page = request.args.get("next")
@@ -40,7 +40,7 @@ def login():
 @auth_bp.route("/logout")
 @login_required
 def logout():
-    log_action("User logged out")
+    log_action("User logged out", category="auth", target_user=user)
     logout_user()
     flash(f"Αποσυνδεθήκατε", "info")
     # return redirect(url_for("auth_bp.login"))
@@ -86,8 +86,9 @@ def register():
         db.session.add(user)
         try:
             db.session.commit() 
-            log_action("User created")   
+            log_action("User created", category="auth", target_user=user)   
         except Exception as e:
+            db.session.rollback()
             flash(f"Σφάλμα κατά την εγγραφή {e}", category="danger")
             return redirect(url_for("main.index"))
 
@@ -95,10 +96,10 @@ def register():
         login_user(user)
 
         if role == "admin":
-            log_action("Δημιουργήθηκε ο πρώτος Διαχειριστής")
+            log_action("Δημιουργήθηκε ο πρώτος Διαχειριστής", category="auth", target_user=user)
             flash(f"Δημιουργήθηκε ο πρώτος Διαχειριστής", "success")
         else:
-            log_action(f"Η εγγραφή για το χρήστη { user.username } ολοκληρώθηκεt")
+            # log_action(f"Η εγγραφή για το χρήστη { user.username } ολοκληρώθηκεt")
             flash(f"Η εγγραφή για το χρήστη { user.username } ολοκληρώθηκε", "success")
 
         return redirect(url_for("main.index"))
